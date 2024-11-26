@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <h2 class="mt-4">Select IP Range to Scan and Run Commands</h2>
-        <form action="/scan" method="get">
+        <form action="/scan" method="post">
             <div class="form-group">
                 <label for="ip_range_start">Start IP:</label>
                 <input type="text" class="form-control" id="ip_range_start" name="ip_range_start" value="192.168.100.1">
@@ -27,7 +27,7 @@
 
     <div class="container mt-5">
         <h2>Select Switches to Run Commands</h2>
-        <form action="/run" method="get">
+        <form action="/run" method="post">
             %s
             <button type="submit" class="btn btn-success mt-3">Run Commands</button>
         </form>
