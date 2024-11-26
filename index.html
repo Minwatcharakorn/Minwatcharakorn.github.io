@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Switch Management Tool</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="mt-4">Select IP Range to Scan and Run Commands</h2>
+        <form action="/scan" method="post">
+            <div class="form-group">
+                <label for="ip_range_start">Start IP:</label>
+                <input type="text" class="form-control" id="ip_range_start" name="ip_range_start" value="192.168.100.1">
+            </div>
+            <div class="form-group">
+                <label for="ip_range_end">End IP:</label>
+                <input type="text" class="form-control" id="ip_range_end" name="ip_range_end" value="192.168.100.10">
+            </div>
+            <button type="submit" class="btn btn-primary">Scan</button>
+        </form>
+    </div>
+
+    <div class="container mt-5">
+        <h2>Select Switches to Run Commands</h2>
+        <form action="/run" method="post">
+            %s
+            <button type="submit" class="btn btn-success mt-3">Run Commands</button>
+        </form>
+    </div>
+
+    <div class="container mt-5">
+        <h2>Command Results</h2>
+        %s
+        <a href="/" class="btn btn-link">Back</a>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
