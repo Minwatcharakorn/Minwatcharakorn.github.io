@@ -3,102 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cisco Switch Console</title>
+    <title>IP Scanner</title>
 </head>
 <body>
-    <h1>Connect to Cisco Switch</h1>
-    <button id="connect">Connect to Switch</button>
-    <button id="send">Send Command</button>
-    <input type="text" id="command" placeholder="Enter Cisco command">
-    <textarea id="output" rows="20" cols="60" placeholder="Output from switch..."></textarea>
+    <h1>IP Scanner</h1>
+    <form id="scanForm">
+        <label for="ip">Enter IP Address:</label>
+        <input type="text" id="ip" name="ip" required>
+        <button type="submit">Scan</button>
+    </form>
+
+    <pre id="result"></pre>
 
     <script>
-        let port;
-        let reader;
-        let outputTextarea = document.getElementById("output");
-        const commandInput = document.getElementById("command");
+        document.getElementById('scanForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const ip = document.getElementById('ip').value;
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = "Scanning...";
 
-        // Function to connect to the switch via serial port
-        async function connectToSwitch() {
             try {
-                port = await navigator.serial.requestPort();
-                await port.open({ baudRate: 115200, dataBits: 8, stopBits: 1, parity: "none" });
+                const response = await fetch('http://localhost:5000/scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ip: ip }),
+                });
 
-                outputTextarea.value += "Connected to the Cisco switch.\n";
-
-                const decoder = new TextDecoderStream();
-                const readableStreamClosed = port.readable.pipeTo(decoder.writable);
-                reader = decoder.readable.getReader();
-
-                // Read data continuously and handle `--More--`
-                while (true) {
-                    const { value, done } = await reader.read();
-                    if (done) {
-                        reader.releaseLock();
-                        break;
-                    }
-                    if (value) {
-                        outputTextarea.value += value;
-                        outputTextarea.scrollTop = outputTextarea.scrollHeight;
-
-                        // Check for `--More--`
-                        if (value.includes("--More--")) {
-                            await sendMoreCommand(); // Send space to continue
-                        }
-                    }
+                const data = await response.json();
+                if (response.ok) {
+                    resultElement.textContent = `Success:\n${data.output}`;
+                } else {
+                    resultElement.textContent = `Error:\n${data.output || data.message}`;
                 }
             } catch (error) {
-                console.error("Connection Error: ", error);
-                outputTextarea.value += `Error: ${error.message}\n`;
+                resultElement.textContent = `Error:\n${error.message}`;
             }
-        }
-
-        // Function to send a CLI command to the switch
-        async function sendCommandToSwitch() {
-            if (!port) {
-                alert("Please connect to a switch first!");
-                return;
-            }
-
-            const command = commandInput.value.trim();
-            if (command === "") {
-                alert("Please enter a command to send!");
-                return;
-            }
-
-            try {
-                const encoder = new TextEncoder();
-                const writer = port.writable.getWriter();
-
-                const data = `${command}\r\n`;
-                await writer.write(encoder.encode(data));
-                outputTextarea.value += `You: ${command}\n`;
-
-                writer.releaseLock();
-                commandInput.value = ""; // Clear the command input field
-            } catch (error) {
-                console.error("Send Command Error: ", error);
-                outputTextarea.value += `Error: ${error.message}\n`;
-            }
-        }
-
-        // Function to send a space (for `--More--`)
-        async function sendMoreCommand() {
-            try {
-                const encoder = new TextEncoder();
-                const writer = port.writable.getWriter();
-
-                await writer.write(encoder.encode("\x20")); // Send Spacebar
-                writer.releaseLock();
-            } catch (error) {
-                console.error("Send More Command Error: ", error);
-                outputTextarea.value += `Error: ${error.message}\n`;
-            }
-        }
-
-        // Add event listeners to buttons
-        document.getElementById("connect").addEventListener("click", connectToSwitch);
-        document.getElementById("send").addEventListener("click", sendCommandToSwitch);
+        });
     </script>
 </body>
 </html>
